@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,
   Platform, KeyboardAvoidingView
 } from 'react-native';
 import theme from '../../theme';
@@ -24,11 +24,10 @@ export default function RegisterScreen({ navigation }) {
   const [selectedCourse, setSelectedCourse] = useState('');
   const [avatarUri, setAvatarUri] = useState('');
   const [errors, setErrors] = useState({});
-  const courseOptions = ['frontend', 'ui-ux', 'backend', 'mobile', 'data-science', 'devops', 'ai-ml'];
   const fileInputRef = useRef(null);
   const dateInputRef = useRef(null);
-  const [birthDateObj, setBirthDateObj] = useState(null);
   const [NativeDatePicker, setNativeDatePicker] = useState(null);
+  const [birthDateObj, setBirthDateObj] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const validate = () => {
@@ -48,27 +47,21 @@ export default function RegisterScreen({ navigation }) {
       else if (!/^\d{4}-\d{2}-\d{2}$/.test(bd)) next.birthDate = t('birthdate_format') || 'Use YYYY-MM-DD';
       if (!ph) next.phone = t('phone_required') || 'Phone is required';
     }
-    if (role === 'teacher' && !selectedCourse) next.selectedCourse = 'Select a course';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
-  const pickAvatar = async () => {
+  const openBirthPicker = async () => {
     if (Platform.OS === 'web') {
-      try { fileInputRef.current && fileInputRef.current.click(); } catch {}
+      try { dateInputRef.current && dateInputRef.current.click(); } catch {}
       return;
     }
     try {
-      const ImagePicker = await import('expo-image-picker');
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') return;
-      const res = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-      if (!res.canceled && res.assets && res.assets.length > 0) setAvatarUri(res.assets[0].uri);
+      if (!NativeDatePicker) {
+        const mod = await import('@react-native-community/datetimepicker');
+        setNativeDatePicker(() => mod.default || mod.DateTimePicker);
+      }
+      setShowDatePicker(true);
     } catch {}
   };
 
@@ -119,22 +112,135 @@ export default function RegisterScreen({ navigation }) {
         style={{ flex: 1, backgroundColor: theme.colors.background }}
       >
         <View style={styles.formCard}>
-          <Text style={[styles.title, styles.centerText]}>{t('create_account') || 'Create account'}</Text>
+          <Text style={[styles.title, styles.centerText]}>{t('create_account') || 'Create Account'}</Text>
 
-          {/* نفس المدخلات هنا بدون تعديل */}
-          {/* (اختصرتها عشان الكود ما يطولش أكتر من اللازم) */}
-          {/* الكود الداخلي بتاع الحقول زي اللي عندك بالضبط */}
+          {/* Name */}
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('name') || 'Name'}</Text>
+            <TextInput
+              placeholder={t('name_placeholder') || 'Your name'}
+              placeholderTextColor={theme.colors.textLight}
+              value={name}
+              onChangeText={(v) => { setName(v); if (errors.name) setErrors({ ...errors, name: null }); }}
+              style={[styles.input, errors.name && styles.inputError]}
+            />
+            {errors.name ? <Text style={styles.err}>{errors.name}</Text> : null}
+          </View>
+
+          {/* Email */}
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('email') || 'Email'}</Text>
+            <TextInput
+              placeholder={t('email_placeholder') || 'you@example.com'}
+              placeholderTextColor={theme.colors.textLight}
+              value={email}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              onChangeText={(v) => { setEmail(v); if (errors.email) setErrors({ ...errors, email: null }); }}
+              style={[styles.input, errors.email && styles.inputError]}
+            />
+            {errors.email ? <Text style={styles.err}>{errors.email}</Text> : null}
+          </View>
+
+          {/* Password */}
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('password') || 'Password'}</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                placeholder={t('password_placeholder') || '••••••'}
+                placeholderTextColor={theme.colors.textLight}
+                value={password}
+                onChangeText={(v) => { setPassword(v); if (errors.password) setErrors({ ...errors, password: null }); }}
+                secureTextEntry={!showPassword}
+                style={[styles.input, { paddingRight: 42 }, errors.password && styles.inputError]}
+              />
+              <TouchableOpacity onPress={() => setShowPassword((s) => !s)} style={styles.eyeBtn}>
+                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color={theme.colors.muted} />
+              </TouchableOpacity>
+            </View>
+            {errors.password ? <Text style={styles.err}>{errors.password}</Text> : null}
+          </View>
+
+          {/* Confirm Password */}
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('confirm_password') || 'Confirm Password'}</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                placeholder={t('confirm_password') || 'Confirm Password'}
+                placeholderTextColor={theme.colors.textLight}
+                value={confirmPassword}
+                onChangeText={(v) => { setConfirmPassword(v); if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: null }); }}
+                secureTextEntry={!showConfirm}
+                style={[styles.input, { paddingRight: 42 }, errors.confirmPassword && styles.inputError]}
+              />
+              <TouchableOpacity onPress={() => setShowConfirm((s) => !s)} style={styles.eyeBtn}>
+                <Ionicons name={showConfirm ? 'eye-off' : 'eye'} size={20} color={theme.colors.muted} />
+              </TouchableOpacity>
+            </View>
+            {errors.confirmPassword ? <Text style={styles.err}>{errors.confirmPassword}</Text> : null}
+          </View>
+
+          {/* Birth date + phone */}
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('birth_date') || 'Birth Date'}</Text>
+            {Platform.OS === 'web' ? (
+              React.createElement('input', {
+                type: 'date',
+                ref: (el) => (dateInputRef.current = el),
+                value: birthDate || '',
+                onChange: (e) => {
+                  const v = e.target?.value || '';
+                  setBirthDate(v);
+                  if (errors.birthDate) setErrors({ ...errors, birthDate: null });
+                },
+                style: { padding: 12, border: `1px solid ${theme.colors.border}`, borderRadius: 10, background: theme.colors.card, color: theme.colors.text, width: '100%' },
+              })
+            ) : (
+              <TouchableOpacity onPress={openBirthPicker} style={[styles.input, errors.birthDate && styles.inputError]}>
+                <Text style={{ color: birthDate ? theme.colors.text : theme.colors.textLight }}>
+                  {birthDate || (t('select_date') || 'Select date')}
+                </Text>
+              </TouchableOpacity>
+            )}
+            {NativeDatePicker && showDatePicker ? (
+              <NativeDatePicker
+                value={birthDateObj || new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    setBirthDate(formatDate(selectedDate));
+                    setBirthDateObj(selectedDate);
+                    if (errors.birthDate) setErrors({ ...errors, birthDate: null });
+                  }
+                }}
+              />
+            ) : null}
+            {errors.birthDate ? <Text style={styles.err}>{errors.birthDate}</Text> : null}
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('phone') || 'Phone'}</Text>
+            <TextInput
+              placeholder={t('phone_placeholder') || '+20123456789'}
+              placeholderTextColor={theme.colors.textLight}
+              value={phone}
+              keyboardType="phone-pad"
+              onChangeText={(v) => { setPhone(v); if (errors.phone) setErrors({ ...errors, phone: null }); }}
+              style={[styles.input, errors.phone && styles.inputError]}
+            />
+            {errors.phone ? <Text style={styles.err}>{errors.phone}</Text> : null}
+          </View>
 
           <TouchableOpacity onPress={onRegister} style={styles.btn} activeOpacity={0.85}>
             <Text style={styles.btnText}>{t('create_account') || 'Create Account'}</Text>
           </TouchableOpacity>
+
           <View style={{ marginTop: 12, alignItems: 'center' }}>
             <Text style={{ color: theme.colors.muted }}>
               {(t('have_account') || 'Already have an account?') + ' '}
-              <Text
-                style={{ color: theme.colors.primary, fontWeight: '700' }}
-                onPress={() => navigation.navigate('Login')}
-              >
+              <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Login')}>
                 {t('login') || 'Login'}
               </Text>
             </Text>
@@ -155,16 +261,21 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
   centerText: { textAlign: 'center' },
   title: { fontSize: 22, fontWeight: '800', color: theme.colors.text, marginBottom: 6 },
-  subtitle: { color: theme.colors.muted, marginBottom: 16 },
   field: { marginBottom: 12 },
   label: { color: theme.colors.muted, marginBottom: 6, fontWeight: '600' },
   input: { borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 10, backgroundColor: theme.colors.card, color: theme.colors.text },
   inputError: { borderColor: theme.colors.danger },
+  err: { color: theme.colors.danger, fontSize: 12, marginTop: 6 },
+  inputContainer: { position: 'relative' },
+  eyeBtn: { position: 'absolute', right: 10, top: 12 },
   btn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },
 });
