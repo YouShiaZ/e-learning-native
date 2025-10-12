@@ -32,5 +32,9 @@ export function goToCourseDetails(navigation, courseId) {
 }
 
 export function goToSearch(navigation) {
-  navigation?.navigate?.('Search');
+  try {
+    if (navigation?.navigate?.('Search')) return;
+  } catch {}
+  try { const p = navigation?.getParent?.(); if (p?.navigate?.('Search')) return; } catch {}
+  try { const gp = navigation?.getParent?.()?.getParent?.(); gp?.navigate?.('Search'); } catch {}
 }

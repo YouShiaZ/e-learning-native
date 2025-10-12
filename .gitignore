@@ -1,8 +1,21 @@
-# dependencies
+# Dependencies
 node_modules/
 
 # Expo
 .expo/
+
+# Build outputs
+dist/
+web-build/
+build/
+
+# Logs and temp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+tmp_app_slice*.js
+tmp_*.js
 
 # OS files
 .DS_Store

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AppButton from './AppButton';
 import theme from '../theme';
 import { t } from '../i18n';
+import { useColors } from '../theme/hooks';
 
 export default function BannerPromo({ 
   titleTop, 
@@ -14,6 +15,7 @@ export default function BannerPromo({
   bgColor = theme.colors.primary,
   onPress 
 }) {
+  const colors = useColors();
   const label = ctaLabel || t('view_more');
   return (
     <TouchableOpacity 
@@ -23,7 +25,7 @@ export default function BannerPromo({
     >
       <View style={styles.clipContainer}>
         <LinearGradient
-          colors={[theme.colors.primaryGradientStart, theme.colors.primaryGradientEnd]}
+          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.banner}

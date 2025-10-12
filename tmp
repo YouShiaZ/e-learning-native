@@ -1,0 +1,71 @@
+        <>
+          <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
+          <Drawer.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
+        </>
+      ) : (
+        <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') || 'Logout' }} />
+      )}
+    </Drawer.Navigator>
+  );
+}
+
+function AppContent() {
+  const dispatch = useDispatch();
+  const darkMode = useSelector((s) => s.ui.darkMode);
+  const locale = useSelector((s) => s.ui.locale);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Load UI preferences (dark mode + locale)
+        try {
+          const dark = await AsyncStorage.getItem('@elearning_dark_mode');
+          if (dark != null) dispatch(setDarkMode(JSON.parse(dark)));
+          const lc = await AsyncStorage.getItem('@elearning_locale');
+          if (lc) {
+            dispatch(setLocaleUI(lc));
+            try { require('./src/i18n').setLocale(lc); } catch {}
+          }
+        } catch {}
+      } catch (error) {
+        // ignore
+      } finally {
+        setIsInitializing(false);
+        SplashScreen.hideAsync();
+      }
+    };
+
+    initializeApp();
+  }, [dispatch]);
+
+  const navTheme = darkMode ? DarkTheme : {
+    ...DefaultTheme,
+    colors: { ...DefaultTheme.colors, background: theme.colors.background },
+  };
+
+  if (isInitializing) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: darkMode ? '#111' : theme.colors.background }}>
+      <NavigationContainer theme={navTheme} key={locale || 'en'}>
+        <StatusBar style={darkMode ? 'light' : 'dark'} />
+        <DrawerNavigator />
+      </NavigationContainer>
+    </GestureHandlerRootView>
+  );
+}
+
+function App() {
+  return <AppContent />;
+}
+
+export default withStore(App);
+
+

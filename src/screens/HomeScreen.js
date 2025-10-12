@@ -72,56 +72,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={[styles.wrapper, { backgroundColor: colors.background }] }>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} bounces>
-        {/* Header with Gradient */}
-        <LinearGradient
-          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.header}
-        >
-          <View style={styles.headerContent}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.greeting}>{t('hello_name', { name })} 👋</Text>
-              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t('what_to_learn')}</Text>
-            </View>
-            <View style={styles.headerRight}>
-              <TouchableOpacity
-                style={[styles.iconButton, { marginRight: 12 }]}
-                onPress={() => openDrawer(navigation)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="menu" size={22} color="#fff" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => { dispatch(setUnread(false)); goToMessages(navigation); }}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="chatbubble-ellipses-outline" size={22} color="#fff" />
-                {(badgeCount > 0 || hasUnread) && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{badgeCount || '•'}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[styles.iconButton, { marginLeft: 12 }]}
-                onPress={() => dispatch(setDarkMode(!darkMode))}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                activeOpacity={0.8}
-              > 
-                <Ionicons name={darkMode ? 'sunny' : 'moon'} size={22} color="#fff" />
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => goToProfile(navigation)} activeOpacity={0.8}>
-                <Image source={{ uri: avatarUri }} style={styles.avatar} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </LinearGradient>
+        {/* App header is unified across screens; Home no longer renders its own nav */}
 
         {/* Banner Promo */}
         <View style={styles.bannerContainer}>
@@ -186,75 +137,7 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: theme.spacing.xl,
   },
-  header: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: theme.spacing.xxl,
-    paddingHorizontal: theme.spacing.xl,
-    borderBottomLeftRadius: theme.radius.xxl,
-    borderBottomRightRadius: theme.radius.xxl,
-    ...theme.shadow.md,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  greeting: {
-    color: '#fff',
-    fontSize: theme.fontSize.xxl,
-    fontWeight: theme.fontWeight.extrabold,
-    marginBottom: theme.spacing.xs,
-  },
-  subtitle: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: theme.fontSize.base,
-    fontWeight: theme.fontWeight.medium,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: theme.radius.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: theme.colors.secondary,
-    borderRadius: theme.radius.full,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.bold,
-  },
-  notificationDot: {
-    minWidth: 10,
-    height: 10,
-    padding: 0,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginLeft: 12,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.7)',
-  },
+  
   bannerContainer: {
     paddingHorizontal: theme.spacing.xl,
     marginTop: theme.spacing.lg,

@@ -31,7 +31,6 @@ export default function SearchScreen({ navigation }) {
       <SectionHeader title={t('categories')} onPress={() => {}} />
       <CategoryGrid items={categories} />
 
-      <SectionHeader title={t('recommended_for_you')} onPress={() => {}} />
       <CourseSection
         title={t('recommended_for_you')}
         data={courses}

@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
+import { t } from '../../i18n';
 import { useSelector } from 'react-redux';
 
 // AdminButton: primary, danger, outline variants
@@ -56,11 +57,13 @@ function AdminTopNav() {
   const nav = useNavigation();
   const route = useRoute();
   const items = [
-    { key: 'AdminDashboard', label: 'Dashboard', icon: 'speedometer' },
-    { key: 'AdminCourses', label: 'Courses', icon: 'book' },
-    { key: 'AdminUsers', label: 'Users', icon: 'people' },
-    { key: 'AdminCategories', label: 'Categories', icon: 'pricetags' },
-    { key: 'AdminSettings', label: 'Settings', icon: 'settings' },
+    { key: 'AdminDashboard', label: t('dashboard') || 'Dashboard', icon: 'speedometer' },
+    { key: 'AdminCourses', label: t('courses') || 'Courses', icon: 'book' },
+    { key: 'AdminUsers', label: t('users') || 'Users', icon: 'people' },
+    { key: 'AdminCategories', label: t('categories') || 'Categories', icon: 'pricetags' },
+    { key: 'AdminSettings', label: t('settings') || 'Settings', icon: 'settings' },
+    { key: 'AdminLive', label: t('live_now') || 'Live', icon: 'radio' },
+    { key: 'AdminSchedule', label: t('schedule') || 'Schedule', icon: 'calendar' },
   ];
   return (
     <View style={[styles.topNav, { borderBottomColor: colors.border }]}>
@@ -105,13 +108,13 @@ export default function AdminLayout({ title, subtitle, actions, children, scroll
   );
 
   if (scrollable) {
-    return <ScrollView contentContainerStyle={{ paddingBottom: theme.spacing.xxl }}>{Content}</ScrollView>;
+    return <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: theme.spacing.xxl }}>{Content}</ScrollView>;
   }
   return Content;
 }
 
 const styles = StyleSheet.create({
-  container: { padding: theme.spacing.base, minHeight: '100%' },
+  container: { padding: theme.spacing.base, minHeight: '100%', flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: theme.spacing.sm },
   title: { fontSize: theme.fontSize.xl, fontWeight: theme.fontWeight.extrabold },
   subtitle: { marginTop: 2 },

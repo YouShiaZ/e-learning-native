@@ -2,13 +2,15 @@ import React from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import theme from '../theme';
+import { useColors } from '../theme/hooks';
 
 export default function AuthLayout({ title, subtitle, children, footer }) {
+  const colors = useColors();
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <LinearGradient
-          colors={[theme.colors.primaryGradientStart, theme.colors.primaryGradientEnd]}
+          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.header}
@@ -56,4 +58,3 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? { boxShadow: '0 8px 24px rgba(0,0,0,0.08)' } : {}),
   },
 });
-

@@ -1,38 +1,49 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-  import { useColors } from '../../theme/hooks';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { continueAsGuest } from '../../store/userSlice';
+import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
 import { t } from '../../i18n';
-import QuickPrefsHeaderRight from '../../components/QuickPrefs';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function WelcomeScreen({ navigation }) {
   const colors = useColors();
+  const dispatch = useDispatch();
 
   const onGuest = async () => {
-    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ isGuest: true })); } catch {}
+    dispatch(continueAsGuest());
+    try { 
+      await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ isGuest: true })); 
+    } catch {}
     navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
   };
 
   return (
     <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
-      {/* Top bar: language/dark/color + skip */}
-      <View style={styles.topBar}>
-        <QuickPrefsHeaderRight />
-        <TouchableOpacity onPress={onGuest} activeOpacity={0.8} style={styles.skipBtn}>
-          <Ionicons name="play-skip-forward" size={20} color={colors.text} />
-          <Text style={[styles.skipText, { color: colors.text }]}>{t('continue_as_guest') || 'Continue as Guest'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.container} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
-          <Image
-            source={require('../../../assets/splash-icon.png')}
-            resizeMode="contain"
-            style={styles.heroImage}
-          />
+          {/* ✅ الصورة مع حماية fallback */}
+          {(() => {
+            try {
+              return (
+                <Image
+                  source={require('../../../../assets/icon.png')} 
+                  resizeMode="contain"
+                  style={styles.heroImage}
+                />
+              );
+            } catch {
+              return (
+                <Ionicons name="school-outline" size={120} color={colors.primary} style={{ marginBottom: 20 }} />
+              );
+            }
+          })()}
+
           <Text style={[styles.title, { color: colors.text }]}>
             {t('welcome_title') || 'Welcome to EduHub'}
           </Text>
@@ -48,7 +59,9 @@ export default function WelcomeScreen({ navigation }) {
             activeOpacity={0.85}
           >
             <Ionicons name="person-add" size={18} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.buttonPrimaryText}>{t('create_account') || 'Create Account'}</Text>
+            <Text style={styles.buttonPrimaryText}>
+              {t('create_account') || 'Create Account'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -57,15 +70,19 @@ export default function WelcomeScreen({ navigation }) {
             activeOpacity={0.85}
           >
             <Ionicons name="log-in-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-            <Text style={[styles.buttonOutlineText, { color: colors.primary }]}>{t('login') || 'Login'}</Text>
+            <Text style={[styles.buttonOutlineText, { color: colors.primary }]}>
+              {t('login') || 'Login'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.buttonGhost]}
+            style={styles.buttonGhost}
             onPress={onGuest}
             activeOpacity={0.85}
           >
-            <Text style={[styles.buttonGhostText, { color: colors.text }]}>{t('continue_as_guest') || 'Continue as Guest'}</Text>
+            <Text style={[styles.buttonGhostText, { color: colors.text }]}>
+              {t('continue_as_guest') || 'Continue as Guest'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -79,21 +96,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-  },
-  skipBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  skipText: {
-    fontWeight: theme.fontWeight.semibold,
-  },
   container: {
     paddingHorizontal: theme.spacing.xl,
     paddingTop: theme.spacing.xl,
@@ -103,8 +105,8 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xl,
   },
   heroImage: {
-    width: 120,
-    height: 120,
+    width: 140,
+    height: 140,
     marginBottom: theme.spacing.lg,
   },
   title: {

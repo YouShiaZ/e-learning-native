@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
@@ -6,14 +6,21 @@ import { courses } from '../mock/data';
 import ProgressBar from '../components/ProgressBar';
 import BannerPromo from '../components/BannerPromo';
 import { useSelector } from 'react-redux';
+import Tabs from '../components/Tabs';
 
 export default function MyCoursesScreen() {
-  const [tab] = useState('ALL');
+  const [tab, setTab] = useState('ALL');
   const colors = useColors();
   const enrolledIds = useSelector((s) => s.user.enrolled);
   const enrolled = courses
     .filter((c) => enrolledIds.includes(c.id))
     .map((c, i) => ({ ...c, progress: [30, 70, 100, 50][i % 4] }));
+
+  const filtered = useMemo(() => {
+    if (tab === 'COMPLETED') return enrolled.filter((c) => c.progress >= 100);
+    if (tab === 'ON GOING') return enrolled.filter((c) => c.progress > 0 && c.progress < 100);
+    return enrolled;
+  }, [enrolled, tab]);
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
@@ -24,16 +31,12 @@ export default function MyCoursesScreen() {
         bgColor="#F6C73B"
       />
 
-      <View style={styles.tabs}>
-        {['ALL', 'ON GOING', 'COMPLETED'].map((t) => (
-          <Text key={t} style={[styles.tab, { color: colors.muted, borderBottomColor: 'transparent' }, t === tab && [{ color: colors.primary, borderBottomColor: colors.primary }]]}>{t}</Text>
-        ))}
-      </View>
+      <Tabs items={['ALL', 'ON GOING', 'COMPLETED']} value={tab} onChange={setTab} />
 
-      {enrolled.length === 0 && (
+      {filtered.length === 0 && (
         <Text style={{ color: colors.muted, marginBottom: 10 }}>No enrolled courses yet</Text>
       )}
-      {enrolled.map((c) => (
+      {filtered.map((c) => (
         <View key={c.id} style={[styles.enrollItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Image source={{ uri: c.thumbnail }} style={styles.enrollImg} />
           <View style={{ flex: 1, marginLeft: 10 }}>

@@ -4,6 +4,7 @@ import AdminLayout, { AdminCard, AdminButton, AdminStat } from '../../components
 import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
 import { useSelector } from 'react-redux';
+import { t } from '../../i18n';
 
 export default function AdminDashboardScreen({ navigation }) {
   const colors = useColors();
@@ -21,26 +22,26 @@ export default function AdminDashboardScreen({ navigation }) {
 
   return (
     <AdminLayout
-      title="Admin Panel"
-      subtitle="Overview and quick actions"
+      title={t('admin_panel') || 'Admin Panel'}
+      subtitle={t('overview_quick_actions') || 'Overview and quick actions'}
       actions={[
-        { label: 'New Course', icon: 'add', onPress: () => navigation.navigate('AdminCourseForm') },
-        { label: 'Settings', icon: 'settings', variant: 'outline', onPress: () => navigation.navigate('AdminSettings') },
+        { label: t('new_course') || 'New Course', icon: 'add', onPress: () => navigation.navigate('AdminCourseForm') },
+        { label: t('settings') || 'Settings', icon: 'settings', variant: 'outline', onPress: () => navigation.navigate('AdminSettings') },
       ]}
     >
       <View style={styles.grid}>
-        <AdminStat label="Courses" value={stats.totalCourses} icon="book" />
-        <AdminStat label="Published" value={stats.published} icon="cloud-done" color={colors.success} />
-        <AdminStat label="Drafts" value={stats.drafts} icon="cloud-offline" color={colors.warning} />
-        <AdminStat label="Users" value={stats.totalUsers} icon="people" />
-        <AdminStat label="Teachers" value={stats.teachers} icon="school" />
+        <AdminStat label={t('courses')} value={stats.totalCourses} icon="book" />
+        <AdminStat label={t('published')} value={stats.published} icon="cloud-done" color={colors.success} />
+        <AdminStat label={t('drafts')} value={stats.drafts} icon="cloud-offline" color={colors.warning} />
+        <AdminStat label={t('users')} value={stats.totalUsers} icon="people" />
+        <AdminStat label={t('teachers')} value={stats.teachers} icon="school" />
       </View>
 
-      <AdminCard title="Quick Links" style={{ marginTop: theme.spacing.base }}>
+      <AdminCard title={t('quick_links') || 'Quick Links'} style={{ marginTop: theme.spacing.base }}>
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-          <AdminButton label="Manage Courses" icon="book" onPress={() => navigation.navigate('AdminCourses')} />
-          <AdminButton label="Users" icon="people" variant="outline" onPress={() => navigation.navigate('AdminUsers')} />
-          <AdminButton label="Categories" icon="pricetags" variant="outline" onPress={() => navigation.navigate('AdminCategories')} />
+          <AdminButton label={t('manage_courses') || 'Manage Courses'} icon="book" onPress={() => navigation.navigate('AdminCourses')} />
+          <AdminButton label={t('users')} icon="people" variant="outline" onPress={() => navigation.navigate('AdminUsers')} />
+          <AdminButton label={t('categories')} icon="pricetags" variant="outline" onPress={() => navigation.navigate('AdminCategories')} />
         </View>
       </AdminCard>
     </AdminLayout>

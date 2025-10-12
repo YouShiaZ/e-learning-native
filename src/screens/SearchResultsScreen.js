@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
 import { t } from '../i18n';
@@ -54,7 +54,11 @@ export default function SearchResultsScreen({ route, navigation }) {
         )}
         onEndReached={hasMore ? load : undefined}
         onEndReachedThreshold={0.4}
-        ListFooterComponent={loading ? null : null}
+        ListFooterComponent={loading ? (
+          <View style={{ paddingVertical: 12 }}>
+            <ActivityIndicator color={colors.primary} />
+          </View>
+        ) : null}
       />
     </View>
   );

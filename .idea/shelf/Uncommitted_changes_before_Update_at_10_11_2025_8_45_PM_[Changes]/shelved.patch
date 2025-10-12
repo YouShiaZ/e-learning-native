@@ -1,0 +1,18 @@
+Index: README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># E‑Learning (React Native + Expo)\r\n\r\n- تطبيق تعليم إلكتروني مختصر.\r\n- التثبيت: `npm install`\r\n- التشغيل: `npm run android` أو `npm run ios` أو `npm run web`\r\n- الإعداد: عدّل `src/config.js` وضع `API_BASE_URL`؛ إن تُرك فارغاً يُستخدم Mock API.\r\n- أهم المجلدات: `src/components`, `src/screens`, `src/store`, `src/services`.\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/README.md b/README.md
+--- a/README.md	(revision 10a59b04c033c849df387865c7c528138db46245)
++++ b/README.md	(date 1760187293878)
+@@ -1,6 +1,6 @@
+ # E‑Learning (React Native + Expo)
+ 
+-- تطبيق تعليم إلكتروني مختصر.
++- تطبيق تعليم إلكتروني  ر.
+ - التثبيت: `npm install`
+ - التشغيل: `npm run android` أو `npm run ios` أو `npm run web`
+ - الإعداد: عدّل `src/config.js` وضع `API_BASE_URL`؛ إن تُرك فارغاً يُستخدم Mock API.

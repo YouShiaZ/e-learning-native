@@ -10,7 +10,7 @@ import { useColors } from '../theme/hooks';
 
 const COLOR_KEY = '@elearning_user_primary_color';
 
-export default function QuickPrefsHeaderRight() {
+export default function QuickPrefsHeaderRight({ tint = 'auto' }) {
   const dispatch = useDispatch();
   const colors = useColors();
   const locale = getLocale();
@@ -37,24 +37,27 @@ export default function QuickPrefsHeaderRight() {
     dispatch(setDarkMode(!dark));
   };
 
+  const iconColor = tint === 'light' ? '#fff' : colors.text;
+  const accentColor = tint === 'light' ? '#fff' : colors.primary;
+
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingRight: 12 }}>
       <TouchableOpacity onPress={cycleColor}>
-        <Ionicons name="color-palette-outline" size={22} color={colors.primary} />
+        <Ionicons name="color-palette-outline" size={22} color={accentColor} />
       </TouchableOpacity>
       <TouchableOpacity onPress={toggleDark}>
-        <Ionicons name={dark ? 'moon' : 'moon-outline'} size={22} color={colors.text} />
+        <Ionicons name={dark ? 'moon' : 'moon-outline'} size={22} color={iconColor} />
       </TouchableOpacity>
       <TouchableOpacity onPress={toggleLocale}>
-        <Ionicons name="language-outline" size={22} color={colors.text} />
+        <Ionicons name="language-outline" size={22} color={iconColor} />
       </TouchableOpacity>
       {!isAuthenticated ? (
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Ionicons name="log-in-outline" size={22} color={colors.text} />
+          <Ionicons name="log-in-outline" size={22} color={iconColor} />
         </TouchableOpacity>
       ) : (
         <TouchableOpacity onPress={() => navigation.navigate('Logout')}>
-          <Ionicons name="log-out-outline" size={22} color={colors.text} />
+          <Ionicons name="log-out-outline" size={22} color={iconColor} />
         </TouchableOpacity>
       )}
     </View>

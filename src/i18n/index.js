@@ -94,29 +94,33 @@ i18n.missingBehavior = 'lazyBase';
 
 // Initialize with device locale, default to English
 i18n.locale = (Localization?.locale || 'en').startsWith('ar') ? 'ar' : 'en';
-// Sync RTL on startup based on initial locale
-if (Platform.OS !== 'web') {
-  try {
+// Sync RTL and document direction on startup
+try {
+  const wantRTL = i18n.locale.startsWith('ar');
+  if (Platform.OS !== 'web') {
     I18nManager.allowRTL(true);
-    const wantRTL = i18n.locale.startsWith('ar');
     if (I18nManager.isRTL !== wantRTL) {
       I18nManager.forceRTL(wantRTL);
     }
-  } catch (e) {}
-}
+  } else if (typeof document !== 'undefined') {
+    document?.documentElement?.setAttribute('dir', wantRTL ? 'rtl' : 'ltr');
+  }
+} catch (e) {}
 
 export function setLocale(locale) {
   i18n.locale = locale;
   // Apply RTL when Arabic is selected
-  if (Platform.OS !== 'web') {
-    try {
+  try {
+    const wantRTL = locale.startsWith('ar');
+    if (Platform.OS !== 'web') {
       I18nManager.allowRTL(true);
-      const wantRTL = locale.startsWith('ar');
       if (I18nManager.isRTL !== wantRTL) {
         I18nManager.forceRTL(wantRTL);
       }
-    } catch (e) {}
-  }
+    } else if (typeof document !== 'undefined') {
+      document?.documentElement?.setAttribute('dir', wantRTL ? 'rtl' : 'ltr');
+    }
+  } catch (e) {}
 }
 
 export function t(key, options) {

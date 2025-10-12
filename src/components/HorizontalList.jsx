@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { FlatList } from 'react-native';
 
 export default function HorizontalList({
@@ -12,6 +12,7 @@ export default function HorizontalList({
   onRefresh,
   ListFooterComponent,
 }) {
+  const canLoad = useRef(false);
   return (
     <FlatList
       horizontal
@@ -20,7 +21,13 @@ export default function HorizontalList({
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       contentContainerStyle={{ paddingBottom }}
-      onEndReached={onEndReached}
+      onMomentumScrollBegin={() => { canLoad.current = true; }}
+      onEndReached={() => {
+        if (canLoad.current && typeof onEndReached === 'function') {
+          canLoad.current = false;
+          onEndReached();
+        }
+      }}
       onEndReachedThreshold={onEndReachedThreshold}
       refreshing={refreshing}
       onRefresh={onRefresh}

@@ -1,0 +1,46 @@
+ .gitignore                                         |  15 [32m+[m[31m-[m
+ .../shelved.patch                                  |  18 [31m-[m
+ .idea/vcs.xml                                      |   7 [31m-[m
+ .idea/workspace.xml                                | 150 [31m--------[m
+ App.js                                             | 192 [32m++++++[m[31m----[m
+ App.web.js                                         | 107 [32m++[m[31m----[m
+ README.md                                          | 402 [32m++++++++++++++++++++[m[31m-[m
+ assets/adaptive-icon.png                           | Bin [31m3924[m -> [32m17547[m bytes
+ assets/icon.png                                    | Bin [31m3924[m -> [32m22380[m bytes
+ assets/splash-icon.png                             | Bin [31m3924[m -> [32m17547[m bytes
+ package-lock.json                                  | 367 [31m-------------------[m
+ package.json                                       |  99 [32m+++[m[31m--[m
+ src/components/AppHeader.jsx                       |  52 [31m---[m
+ src/components/AuthLayout.jsx                      |   5 [32m+[m[31m-[m
+ src/components/BannerPromo.jsx                     |   4 [32m+[m[31m-[m
+ src/components/CourseSection.jsx                   |   9 [32m+[m[31m-[m
+ src/components/HorizontalList.jsx                  |  11 [32m+[m[31m-[m
+ src/components/QuickPrefs.js                       |  15 [32m+[m[31m-[m
+ src/components/WelcomeHeaderRight.jsx              |  30 [31m--[m
+ src/components/admin/AdminLayout.jsx               |  17 [32m+[m[31m-[m
+ src/i18n/ar.json                                   |  40 [32m+[m[31m-[m
+ src/i18n/en.json                                   |  37 [32m+[m[31m-[m
+ src/i18n/index.js                                  |  26 [32m+[m[31m-[m
+ src/mock/data.js                                   | 227 [32m+[m[31m-----------[m
+ src/navigation/AppNavigator.js                     |   0
+ src/navigation/DrawerContent.js                    |   0
+ src/navigation/DrawerNavigator.js                  |   0
+ src/screens/AIChatScreen.js                        |   0
+ src/screens/HomeScreen.js                          | 121 [32m++++++[m[31m-[m
+ src/screens/LiveNowScreen.js                       |  51 [31m---[m
+ src/screens/MyCoursesScreen.js                     |  21 [32m+[m[31m-[m
+ src/screens/ScheduleScreen.js                      |  53 [31m---[m
+ src/screens/SearchResultsScreen.js                 |   8 [32m+[m[31m-[m
+ src/screens/SearchScreen.js                        |   1 [32m+[m
+ src/screens/TeachersScreen.js                      |  40 [31m--[m
+ src/screens/admin/AdminDashboardScreen.js          |  27 [32m+[m[31m-[m
+ src/screens/admin/AdminLiveScreen.js               |  77 [31m----[m
+ src/screens/admin/AdminScheduleScreen.js           |  66 [31m----[m
+ src/screens/admin/AdminUsersScreen.js              | 184 [32m+[m[31m---------[m
+ src/screens/auth/LoginScreen.js                    | 168 [32m+++++[m[31m----[m
+ src/screens/auth/RegisterScreen.js                 | 105 [32m+++++[m[31m-[m
+ src/screens/auth/WelcomeScreen.js                  |  25 [32m+[m[31m-[m
+ src/theme/hooks.js                                 |  32 [32m+[m[31m-[m
+ src/utils/nav.js                                   |   6 [32m+[m[31m-[m
+ tmp                                                |  71 [31m----[m
+ 45 files changed, 1007 insertions(+), 1879 deletions(-)
