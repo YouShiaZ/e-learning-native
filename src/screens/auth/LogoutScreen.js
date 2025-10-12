@@ -7,17 +7,30 @@ import theme from '../../theme';
 
 export default function LogoutScreen({ navigation }) {
   const dispatch = useDispatch();
+
   useEffect(() => {
-    (async () => {
-      dispatch(logout());
-      try { await AsyncStorage.removeItem('@elearning_auth_state'); } catch {}
-      navigation.goBack();
-    })();
+    const run = async () => {
+      try {
+        dispatch(logout());
+        await AsyncStorage.removeItem('@elearning_auth_state');
+        navigation.reset({ index: 0, routes: [{ name: 'WelcomeStack' }] });
+      } catch (e) {
+        console.log('Logout error:', e);
+      }
+    };
+    run();
   }, [dispatch, navigation]);
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme.colors.background,
+      }}
+    >
       <ActivityIndicator size="large" color={theme.colors.primary} />
     </View>
   );
 }
-

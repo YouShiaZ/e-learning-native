@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { courses } from '../mock/data';
 import { CourseCardVertical } from '../components/CourseCard';
 import { useSelector, useDispatch } from 'react-redux';
-import { setAdmin, logout } from '../store/userSlice';
+import { setAdmin, logout, updateProfile, loginSuccess } from '../store/userSlice';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setPrimaryColor, setDarkMode, setLocaleUI } from '../store/uiSlice';
@@ -15,22 +15,40 @@ import { setLocale, getLocale } from '../i18n';
 
 export default function ProfileScreen({ navigation }) {
   const colors = useColors();
+  const dispatch = useDispatch();
+
   const favIds = useSelector((s) => s.favorites.ids);
   const isAdmin = useSelector((s) => s.user.isAdmin);
   const user = useSelector((s) => s.user.user);
   const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
-  const isGuest = useSelector((s) => s.user.isGuest);
-  const dispatch = useDispatch();
   const favCourses = courses.filter((c) => favIds.includes(c.id));
 
-  const handleLogout = async () => {
-    try {
-      dispatch(logout());
-      try { await AsyncStorage.removeItem('@elearning_auth_state'); } catch {}
-    } catch {}
-  };
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formBirthDate, setFormBirthDate] = useState('');
+  const [formTeacherCourse, setFormTeacherCourse] = useState('');
+  const [avatarUri, setAvatarUri] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [colorInput, setColorInput] = useState('');
+  const fileInputRef = useRef(null);
 
-  // Load saved user color on mount (if any)
+  // ✅ تحميل بيانات المستخدم من AsyncStorage لو Redux فاضي
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const raw = await AsyncStorage.getItem('@elearning_auth_state');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.user) dispatch(loginSuccess(parsed.user));
+        }
+      } catch (e) {
+        console.log('Error loading user:', e);
+      }
+    };
+    if (!user) loadUser();
+  }, [dispatch, user]);
+
+  // ✅ تحميل اللون لو متخزن
   useEffect(() => {
     (async () => {
       try {
@@ -40,8 +58,24 @@ export default function ProfileScreen({ navigation }) {
     })();
   }, [dispatch]);
 
-  // Local color input for manual change
-  const [colorInput, setColorInput] = useState('');
+  // ✅ تحميل بيانات المستخدم في الـ inputs
+  useEffect(() => {
+    if (user) {
+      setFormName(user?.name || '');
+      setFormPhone(user?.profile?.phone || '');
+      setFormBirthDate(user?.profile?.birthDate || '');
+      setFormTeacherCourse(user?.profile?.teacherCourse || '');
+      setAvatarUri(user?.avatar || '');
+    }
+  }, [user]);
+
+  const handleLogout = async () => {
+    try {
+      dispatch(logout());
+      await AsyncStorage.removeItem('@elearning_auth_state');
+    } catch {}
+  };
+
   const applyColor = async () => {
     const c = (colorInput || '').trim();
     if (!c) return;
@@ -56,148 +90,130 @@ export default function ProfileScreen({ navigation }) {
     dispatch(setLocaleUI(next));
   };
 
+  const pickAvatar = async () => {
+    if (Platform.OS === 'web') {
+      try { fileInputRef.current && fileInputRef.current.click(); } catch {}
+      return;
+    }
+    try {
+      const ImagePicker = await import('expo-image-picker');
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') return;
+      const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.8 });
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        setAvatarUri(res.assets[0].uri);
+      }
+    } catch {}
+  };
+
+  const saveProfile = async () => {
+    const updates = {
+      name: formName.trim(),
+      avatar: avatarUri || user?.avatar,
+      profile: {
+        ...(user?.profile || {}),
+        phone: formPhone.trim() || null,
+        birthDate: formBirthDate.trim() || null,
+        teacherCourse: user?.role === 'teacher' ? formTeacherCourse : (user?.profile?.teacherCourse || null),
+      },
+    };
+    try {
+      dispatch(updateProfile(updates));
+      const auth = { user: { ...(user || {}), ...updates, profile: { ...(user?.profile || {}), ...(updates.profile || {}) } } };
+      await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify(auth));
+
+      const key = String(auth.user.email || '').toLowerCase();
+      const raw = await AsyncStorage.getItem('@elearning_profiles');
+      const map = raw ? JSON.parse(raw) : {};
+      map[key] = auth.user;
+      await AsyncStorage.setItem('@elearning_profiles', JSON.stringify(map));
+
+      setEditMode(false);
+    } catch {}
+  };
+
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header] }>
-        <Image 
-          source={{ uri: user?.avatar || 'https://i.pravatar.cc/150?img=5' }} 
-          style={styles.avatar} 
-        />
-        <Text style={[styles.name, { color: colors.text }]}>{user?.name || (t('guest_user') || 'Guest User')}</Text>
-        <Text style={[styles.title, { color: colors.muted }]}>{(user?.role && t(user.role)) || (t('guest') || 'Guest')}</Text>
-        {/* Auth removed: no login prompt */}
-        <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statNum}>{favCourses.length}</Text>
-            <Text style={styles.statLabel}>{t('saved') || 'Saved'}</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNum}>{user?.enrolledCourses?.length || 0}</Text>
-            <Text style={styles.statLabel}>{t('enrolled') || 'Enrolled'}</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNum}>{user?.completedCourses?.length || 0}</Text>
-            <Text style={styles.statLabel}>{t('completed') || 'Completed'}</Text>
-          </View>
-        </View>
+      <View style={styles.header}>
+        <Image source={{ uri: avatarUri || user?.avatar || 'https://i.pravatar.cc/150?img=5' }} style={styles.avatar} />
+        <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'Guest User'}</Text>
+        <Text style={[styles.title, { color: colors.muted }]}>{user?.role || 'guest'}</Text>
       </View>
 
-      {/* Auth actions */}
-      {isAuthenticated ? (
+      {/* Editable Profile */}
+      <View style={styles.card}>
+        <View style={styles.rowBetween}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile') || 'Profile'}</Text>
+          <TouchableOpacity onPress={() => setEditMode(!editMode)}>
+            <Text style={{ color: colors.primary, fontWeight: '700' }}>{editMode ? (t('cancel') || 'Cancel') : (t('edit') || 'Edit')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Avatar */}
+        {editMode && (
+          <TouchableOpacity onPress={pickAvatar} style={[styles.btn, { backgroundColor: colors.primary, alignSelf: 'flex-start' }]}>
+            <Text style={{ color: '#fff', fontWeight: '700' }}>{t('change_photo') || 'Change Photo'}</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Name */}
+        <Text style={[styles.label, { color: colors.muted }]}>{t('name') || 'Name'}</Text>
+        {editMode ? (
+          <TextInput value={formName} onChangeText={setFormName} style={[styles.input, { color: colors.text, borderColor: colors.border }]} />
+        ) : (
+          <Text style={{ color: colors.text }}>{user?.name || '-'}</Text>
+        )}
+
+        {/* Email */}
+        <Text style={[styles.label, { color: colors.muted }]}>{t('email') || 'Email'}</Text>
+        <Text style={{ color: colors.text }}>{user?.email || '-'}</Text>
+
+        {/* Phone */}
+        <Text style={[styles.label, { color: colors.muted }]}>{t('phone') || 'Phone'}</Text>
+        {editMode ? (
+          <TextInput value={formPhone} onChangeText={setFormPhone} keyboardType="phone-pad" style={[styles.input, { color: colors.text, borderColor: colors.border }]} />
+        ) : (
+          <Text style={{ color: colors.text }}>{user?.profile?.phone || '-'}</Text>
+        )}
+
+        {/* Birth Date */}
+        <Text style={[styles.label, { color: colors.muted }]}>{t('birth_date') || 'Birth Date'}</Text>
+        {editMode ? (
+          <TextInput value={formBirthDate} onChangeText={setFormBirthDate} placeholder="YYYY-MM-DD" style={[styles.input, { color: colors.text, borderColor: colors.border }]} />
+        ) : (
+          <Text style={{ color: colors.text }}>{user?.profile?.birthDate || '-'}</Text>
+        )}
+
+        {/* Save */}
+        {editMode && (
+          <TouchableOpacity onPress={saveProfile} style={[styles.btn, { backgroundColor: colors.primary, marginTop: 10 }]}>
+            <Text style={{ color: '#fff', fontWeight: '700' }}>{t('save') || 'Save'}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Logout */}
+      {isAuthenticated && (
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton} activeOpacity={0.85}>
           <Ionicons name="log-out-outline" size={20} color={theme.colors.danger} />
           <Text style={styles.logoutText}>{t('logout')}</Text>
         </TouchableOpacity>
-      ) : (
-        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={[styles.logoutButton, { backgroundColor: theme.colors.surface }]} activeOpacity={0.85}>
-          <Ionicons name="log-in-outline" size={20} color={theme.colors.primary} />
-          <Text style={[styles.logoutText, { color: theme.colors.primary }]}>{t('login') || 'Login'}</Text>
-        </TouchableOpacity>
       )}
-
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('saved_courses')}</Text>
-      {favCourses.length === 0 && (
-        <Text style={{ color: colors.muted }}>{t('no_favorites')}</Text>
-      )}
-      {favCourses.map((c) => (
-        <CourseCardVertical 
-          key={c.id + '-saved'} 
-          course={c} 
-          onPress={() => navigation.navigate('Home', { 
-            screen: 'CourseDetails', 
-            params: { courseId: c.id } 
-          })} 
-          showBookmark 
-        />
-      ))}
-
-      <View style={{ height: 20 }} />
-      
-      {user?.role === 'admin' && (
-        <>
-          <Text style={styles.sectionTitle}>{t('admin')}</Text>
-          <Text style={{ color: theme.colors.muted, marginBottom: 6 }}>
-            {t('admin_mode') || 'Admin mode'}: {isAdmin ? (t('on') || 'ON') : (t('off') || 'OFF')}
-          </Text>
-          <TouchableOpacity onPress={() => dispatch(setAdmin(!isAdmin))}>
-            <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>
-              {t('toggle_admin_mode') || 'Toggle Admin Mode'}
-            </Text>
-          </TouchableOpacity>
-        </>
-      )}
-      
-      <LanguageSwitcher />
-
-      {/* User theme controls */}
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('appearance') || 'Appearance'}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <TextInput
-          placeholder="#6C63FF"
-          placeholderTextColor={colors.muted}
-          value={colorInput}
-          onChangeText={setColorInput}
-          style={{ flex: 1, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, color: colors.text, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }}
-        />
-        <TouchableOpacity onPress={applyColor} style={{ backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8 }}>
-          <Text style={{ color: '#fff', fontWeight: '700' }}>{t('apply') || 'Apply'}</Text>
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity onPress={() => dispatch(setDarkMode(!useSelector((s)=>s.ui.darkMode)))} style={{ marginTop: 8 }}>
-        <Text style={{ color: colors.primary, fontWeight: '700' }}>{t('toggle_dark_mode') || 'Toggle Dark Mode'}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={toggleLocale} style={{ marginTop: 8 }}>
-        <Text style={{ color: colors.primary, fontWeight: '700' }}>{t('toggle_language') || 'Toggle Language'}</Text>
-      </TouchableOpacity>
-
-      <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { padding: 20 },
-  header: { alignItems: 'center', marginBottom: 10 },
+  header: { alignItems: 'center', marginBottom: 16 },
   avatar: { width: 84, height: 84, borderRadius: 42 },
-  name: { fontSize: 18, fontWeight: '800', color: theme.colors.text, marginTop: 10 },
-  title: { 
-    color: theme.colors.muted, 
-    marginTop: 4,
-    textTransform: 'capitalize',
-  },
-  loginPrompt: {
-    marginTop: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: theme.colors.primary + '15',
-    borderRadius: theme.radius.md,
-  },
-  loginPromptText: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  statsRow: { flexDirection: 'row', marginTop: 12 },
-  stat: { alignItems: 'center', marginHorizontal: 16 },
-  statNum: { fontWeight: '800', color: theme.colors.text },
-  statLabel: { color: theme.colors.muted, fontSize: 12, marginTop: 2 },
-  sectionTitle: { fontWeight: '700', color: theme.colors.text, marginVertical: 12 },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.dangerLight || '#fee',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: theme.radius.md,
-    marginBottom: 20,
-    gap: 8,
-  },
-  logoutText: {
-    color: theme.colors.danger,
-    fontWeight: '600',
-    fontSize: 16,
-  },
+  name: { fontSize: 18, fontWeight: '800', marginTop: 10 },
+  title: { textTransform: 'capitalize', marginTop: 4 },
+  card: { padding: 16, borderWidth: 1, borderRadius: 12, borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8 },
+  label: { marginTop: 12, marginBottom: 4 },
+  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
+  btn: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  logoutButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, marginTop: 20, borderRadius: 10, backgroundColor: '#fee', gap: 6 },
+  logoutText: { color: theme.colors.danger, fontWeight: '700' },
 });
-
-
