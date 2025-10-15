@@ -86,6 +86,8 @@ export default function AdminCategoriesScreen() {
           data={categories}
           keyExtractor={(i) => i.id}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: theme.spacing.base }}
           ListEmptyComponent={<Text style={{ color: colors.muted }}>No categories</Text>}
           refreshing={loading}
           onRefresh={load}

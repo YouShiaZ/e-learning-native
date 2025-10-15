@@ -214,7 +214,7 @@ export default function AdminUsersScreen() {
         </View>
       </AdminCard>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
         {/* Pending Teachers */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Pending Teachers ({pending.length})</Text>
         {pending.length === 0 ? (

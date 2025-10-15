@@ -7,6 +7,7 @@ export default StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingBottom: 120,
   },
   coverContainer: {

@@ -4,8 +4,8 @@ const initialState = {
   items: [],
 };
 
-const wishlistSlice = createSlice({
-  name: 'wishlist',
+const favoritesSlice = createSlice({
+  name: 'favorites',
   initialState,
   reducers: {
     addItem(state, action) {
@@ -27,11 +27,11 @@ const wishlistSlice = createSlice({
   },
 });
 
-export const { addItem, removeItem, clear } = wishlistSlice.actions;
+export const { addItem, removeItem, clear } = favoritesSlice.actions;
 
-export const selectAll = (state) => state.wishlist.items;
+export const selectAll = (state) => state.favorites.items;
 export const selectIds = createSelector(selectAll, (items) => items.map((item) => item.id));
 export const makeSelectById = (courseId) =>
   createSelector(selectAll, (items) => items.find((item) => item.id === courseId));
 
-export default wishlistSlice.reducer;
+export default favoritesSlice.reducer;

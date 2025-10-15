@@ -45,7 +45,10 @@ export default function AdminSettingsScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }] }>
+    <ScrollView
+      contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={[styles.title, { color: colors.text }]}>Site Settings</Text>
       <View style={styles.fieldRow}>
         <Text style={[styles.label, { color: colors.muted }]}>Site Title</Text>
@@ -68,7 +71,7 @@ export default function AdminSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flexGrow: 1, padding: 16 },
   title: { fontWeight: '800', marginBottom: 12 },
   fieldRow: { marginBottom: 12 },
   label: { marginBottom: 6 },

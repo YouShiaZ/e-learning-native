@@ -15,18 +15,28 @@ export default function TeachersScreen({ navigation }) {
   }, [q]);
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={{ paddingHorizontal: theme.spacing.base, paddingTop: theme.spacing.base }}>
-        <SearchBar value={q} onChangeText={setQ} onSubmit={() => {}} />
-      </View>
       <FlatList
-        style={{ padding: theme.spacing.base }}
         data={list}
         keyExtractor={(t) => t.id}
         numColumns={2}
         columnWrapperStyle={{ gap: theme.spacing.base }}
+        contentContainerStyle={{
+          paddingHorizontal: theme.spacing.base,
+          paddingTop: theme.spacing.base,
+          paddingBottom: theme.spacing.xl,
+        }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={{ marginBottom: theme.spacing.base }}>
+            <SearchBar value={q} onChangeText={setQ} onSubmit={() => {}} />
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={{ flex: 1, marginBottom: theme.spacing.base }}>
-            <TeacherCard teacher={item} onPress={() => navigation.navigate('TeacherProfile', { teacherId: item.id })} />
+            <TeacherCard
+              teacher={item}
+              onPress={() => navigation.navigate('TeacherProfile', { teacherId: item.id })}
+            />
           </View>
         )}
       />

@@ -130,6 +130,7 @@ export default function AdminCoursesScreen({ navigation }) {
         contentContainerStyle={{ paddingBottom: 20 }}
         data={filtered}
         keyExtractor={(c) => c.id}
+        showsVerticalScrollIndicator={false}
         onEndReached={hasMore ? load : undefined}
         onEndReachedThreshold={0.4}
         renderItem={({ item: c }) => (

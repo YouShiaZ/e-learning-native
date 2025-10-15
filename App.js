@@ -43,6 +43,9 @@ import AdminScheduleScreen from './src/screens/admin/AdminScheduleScreen';
 import LiveNowScreen from './src/screens/LiveNowScreen';
 import ScheduleScreen from './src/screens/ScheduleScreen';
 import TeachersScreen from './src/screens/TeachersScreen';
+import FavoritesScreen from './src/screens/FavoritesScreen';
+import WishlistScreen from './src/screens/WishlistScreen';
+import CartScreen from './src/screens/CartScreen';
 import WelcomeScreen from './src/screens/auth/WelcomeScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
@@ -169,6 +172,42 @@ function TeachersStack() {
   );
 }
 
+function FavoritesStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen
+        name="FavoritesMain"
+        component={FavoritesScreen}
+        options={{ title: t('favorites') || 'Favorites' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function WishlistStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen
+        name="WishlistMain"
+        component={WishlistScreen}
+        options={{ title: t('wishlist') || 'Wishlist' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function CartStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen
+        name="CartMain"
+        component={CartScreen}
+        options={{ title: t('cart') || 'Cart' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 // MessagesScreen is provided from src/screens/MessagesScreen
 
 function DrawerNavigator() {
@@ -195,6 +234,9 @@ function DrawerNavigator() {
       <Drawer.Screen name="LiveNow" component={LiveStack} options={{ title: t('live_now') || 'Live Now' }} />
       <Drawer.Screen name="Schedule" component={ScheduleStack} options={{ title: t('schedule') || 'Schedule' }} />
       <Drawer.Screen name="Teachers" component={TeachersStack} options={{ title: 'Teachers' }} />
+      <Drawer.Screen name="Favorites" component={FavoritesStack} options={{ title: t('favorites') || 'Favorites' }} />
+      <Drawer.Screen name="Wishlist" component={WishlistStack} options={{ title: t('wishlist') || 'Wishlist' }} />
+      <Drawer.Screen name="Cart" component={CartStack} options={{ title: t('cart') || 'Cart' }} />
       {!isAuthenticated ? (
         <Drawer.Screen name="WelcomeStack" component={AuthStack} options={{ title: 'Welcome' }} />
       ) : null}

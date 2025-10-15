@@ -22,7 +22,11 @@ export default function SearchScreen({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <SearchBar value={query} onChangeText={setQuery} onSubmit={startSearch} />
 
       <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('hot_topics')}</Text>
@@ -41,7 +45,7 @@ export default function SearchScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
+  container: { flexGrow: 1, padding: 20 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: theme.colors.text, marginTop: 16, marginBottom: 8 },
   
 });

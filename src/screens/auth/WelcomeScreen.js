@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    flexGrow: 1,
     paddingHorizontal: theme.spacing.xl,
     paddingTop: theme.spacing.xl,
   },

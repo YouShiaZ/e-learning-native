@@ -23,7 +23,11 @@ export default function MyCoursesScreen() {
   }, [enrolled, tab]);
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <BannerPromo
         titleTop="Courses that boost your career!"
         ctaLabel="Check Now"
@@ -52,7 +56,7 @@ export default function MyCoursesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
+  container: { flexGrow: 1, padding: 20 },
   tabs: { flexDirection: 'row', marginBottom: 10 },
   tab: { marginRight: 16, paddingVertical: 8, color: theme.colors.muted, borderBottomWidth: 2, borderBottomColor: 'transparent', fontWeight: '700' },
   tabActive: { color: theme.colors.primary, borderBottomColor: theme.colors.primary },

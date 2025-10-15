@@ -14,7 +14,11 @@ import Tabs from '../components/Tabs';
 import { CoursesAPI } from '../services/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { joinCourse, unjoinCourse } from '../store/userSlice';
-import { toggleFavorite } from '../store/favoritesSlice';
+import {
+  addItem as addFavoriteItem,
+  removeItem as removeFavoriteItem,
+  selectAll as selectAllFavorites,
+} from '../store/slices/favoritesSlice';
 import styles from './CourseDetails.styles';
 import { goToMessages } from '../utils/nav';
 import OverviewSection from './course/OverviewSection';
@@ -30,9 +34,13 @@ export default function CourseDetailsScreen({ route, navigation }) {
     instructors.find((t) => t.id === fallbackCourse.teacherId) || instructors[0]
   );
   const [tab, setTab] = useState('OVERVIEW');
-  const favIds = useSelector((s) => s.favorites.ids);
-  const isBookmarked = favIds.includes(course?.id);
-  const onToggleBookmark = () => dispatch(toggleFavorite(course.id));
+  const favoriteCourses = useSelector(selectAllFavorites);
+  const isBookmarked = favoriteCourses.some((fav) => fav.id === course?.id);
+  const onToggleBookmark = () => {
+    if (!course?.id) return;
+    if (isBookmarked) dispatch(removeFavoriteItem(course.id));
+    else dispatch(addFavoriteItem(course));
+  };
   const enrolledIds = useSelector((s) => s.user.enrolled);
   const dispatch = useDispatch();
   const isEnrolled = enrolledIds.includes(course?.id);

@@ -43,6 +43,8 @@ export default function AdminScheduleScreen() {
         style={{ marginTop: 8 }}
         data={items}
         keyExtractor={(i) => String(i.id)}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: theme.spacing.base }}
         renderItem={({ item }) => (
           <View style={[styles.row, { borderColor: colors.border, backgroundColor: colors.card }]}>
             <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>

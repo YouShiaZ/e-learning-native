@@ -16,9 +16,7 @@ import BannerPromo from '../components/BannerPromo';
 import { t } from '../i18n';
 import { CoursesAPI } from '../services/api';
 import config from '../config';
-import { useSelector, useDispatch } from 'react-redux';
-import { setDarkMode, setUnread } from '../store/uiSlice';
-import { loadWishlist } from '../store/slices/wishlistSlice';
+import { useSelector } from 'react-redux';
 
 export default function HomeScreen({ navigation }) {
   const colors = useColors();
@@ -28,19 +26,6 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   const user = useSelector((s) => s.user.user);
-  const favIds = useSelector((s) => s.favorites.ids);
-  const wishlistItems = useSelector((s) => s.wishlist.items);
-  const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
-  const dispatch = useDispatch();
-  const darkMode = useSelector((s) => s.ui.darkMode);
-  const hasUnread = useSelector((s) => s.ui.hasUnread);
-
-  useEffect(() => {
-    // Load guest wishlist by default
-    dispatch(loadWishlist());
-  }, [dispatch]);
-
-  const badgeCount = wishlistItems.length || favIds.length;
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -113,7 +98,7 @@ export default function HomeScreen({ navigation }) {
           <SectionHeader title={t('course_inspires')} onPress={() => {}} />
           <View style={styles.verticalList}>
             {popular.map((c) => (
-              <CourseCardVertical key={c.id + '-v'} course={c} onPress={() => onCourse(c)} showBookmark />
+              <CourseCardVertical key={c.id + '-v'} course={c} onPress={() => onCourse(c)} />
             ))}
           </View>
         </View>
@@ -135,6 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   container: {
+    flexGrow: 1,
     paddingBottom: theme.spacing.xl,
   },
   

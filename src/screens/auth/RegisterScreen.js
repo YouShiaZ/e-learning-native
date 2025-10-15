@@ -113,7 +113,12 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>{t('create_account') || 'Create account'}</Text>
             <View style={styles.field}> 
         <Text style={styles.label}>{t('name') || 'Name'}</Text>
@@ -305,6 +310,7 @@ export default function RegisterScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  scrollContent: { flexGrow: 1, padding: 20, paddingBottom: 40 },
   title: { fontSize: 22, fontWeight: '800', color: theme.colors.text, marginBottom: 6 },
   subtitle: { color: theme.colors.muted, marginBottom: 16 },
   field: { marginBottom: 12 },

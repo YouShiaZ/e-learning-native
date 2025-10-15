@@ -13,7 +13,10 @@ export default function CoursePlayScreen({ route }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 90 }}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 90 }}
+        showsVerticalScrollIndicator={false}
+      >
         <Image source={{ uri: course.thumbnail }} style={styles.cover} />
 
         <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>

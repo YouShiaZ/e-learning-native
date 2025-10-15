@@ -12,7 +12,11 @@ export default function TeacherProfileScreen({ route, navigation }) {
   const teacherCourses = courses.filter((c) => c.teacherId === teacher.id);
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 24, backgroundColor: colors.background }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <ImageBackground source={{ uri: teacher.banner }} style={styles.banner}>
         <View style={styles.overlay} />
         <View style={styles.profileRow}>
@@ -44,6 +48,7 @@ export default function TeacherProfileScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+  container: { flexGrow: 1, paddingBottom: 24 },
   banner: { height: 170, justifyContent: 'flex-end' },
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.2)' },
   profileRow: { flexDirection: 'row', alignItems: 'center', padding: 16 },

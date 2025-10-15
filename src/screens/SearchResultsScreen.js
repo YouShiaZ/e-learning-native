@@ -44,13 +44,23 @@ export default function SearchResultsScreen({ route, navigation }) {
   }, [load]);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
-      <Text style={[styles.count, { color: colors.muted }]}>{items.length} {t('results')}</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={items}
         keyExtractor={(c) => c.id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: theme.spacing.lg }}
+        ListHeaderComponent={
+          <Text style={[styles.count, { color: colors.muted, marginBottom: theme.spacing.sm }]}>
+            {items.length} {t('results')}
+          </Text>
+        }
         renderItem={({ item: c }) => (
-          <CourseCardVertical key={c.id + '-res'} course={c} onPress={() => navigation.navigate('CourseDetails', { courseId: c.id })} showBookmark />
+          <CourseCardVertical
+            key={c.id + '-res'}
+            course={c}
+            onPress={() => navigation.navigate('CourseDetails', { courseId: c.id })}
+          />
         )}
         onEndReached={hasMore ? load : undefined}
         onEndReachedThreshold={0.4}

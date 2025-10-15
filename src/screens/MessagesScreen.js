@@ -16,6 +16,7 @@ export default function MessagesScreen() {
       <FlatList
         data={DATA}
         keyExtractor={(i) => i.id}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity style={[styles.row, { backgroundColor: colors.card }]}>
             <View style={[styles.icon, { backgroundColor: colors.surface }]}><Ionicons name="chatbubble-ellipses" size={18} color={colors.primary} /></View>
@@ -27,6 +28,7 @@ export default function MessagesScreen() {
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => <View style={styles.sep} />}
+        contentContainerStyle={{ paddingBottom: theme.spacing.xl }}
       />
     </View>
   );

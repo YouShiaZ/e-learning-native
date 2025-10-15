@@ -15,6 +15,7 @@ export default function LiveNowScreen({ navigation }) {
       <FlatList
         data={live}
         keyExtractor={(i) => i.id}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => navigation.navigate('CourseDetails', { courseId: item.id })}>
             <View style={styles.mediaWrap}>
@@ -32,7 +33,7 @@ export default function LiveNowScreen({ navigation }) {
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        contentContainerStyle={{ paddingVertical: theme.spacing.base }}
+        contentContainerStyle={{ paddingVertical: theme.spacing.base, paddingBottom: theme.spacing.xl }}
       />
     </View>
   );
