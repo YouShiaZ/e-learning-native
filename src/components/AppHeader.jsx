@@ -17,7 +17,7 @@ const FALLBACK_AVATAR = 'https://i.pravatar.cc/100?img=24';
 export default function AppHeader({ navigation, route, options, back }) {
   const colors = useColors();
   const insets = useSafeAreaInsets?.() || { top: Platform.OS === 'ios' ? 44 : 0 };
-  const { width } = useWindowDimensions?.() || { width: 480 };
+  const { width } = useWindowDimensions();
   const isCompact = width <= 380;
   const iconSize = isCompact ? 18 : 22;
   const title =

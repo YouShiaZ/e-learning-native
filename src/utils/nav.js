@@ -20,15 +20,74 @@ export function openDrawer(navigation) {
 }
 
 export function goToMessages(navigation) {
-  navigation?.navigate?.('Messages');
+  if (!navigation) return;
+  const routeName = 'Messages';
+  const tryNavigate = (nav) => {
+    const names = nav?.getState?.()?.routeNames;
+    if (names?.includes?.(routeName) && nav?.navigate) {
+      nav.navigate(routeName);
+      return true;
+    }
+    return false;
+  };
+  if (tryNavigate(navigation)) return;
+  let parent = navigation.getParent?.();
+  let root = navigation;
+  while (parent) {
+    if (tryNavigate(parent)) return;
+    root = parent;
+    parent = parent.getParent?.();
+  }
+  root?.navigate?.('Messages');
 }
 
 export function goToProfile(navigation) {
-  navigation?.navigate?.('Profile');
+  if (!navigation) return;
+  const routeName = 'Profile';
+  const tryNavigate = (nav) => {
+    const names = nav?.getState?.()?.routeNames;
+    if (names?.includes?.(routeName) && nav?.navigate) {
+      nav.navigate(routeName);
+      return true;
+    }
+    return false;
+  };
+  if (tryNavigate(navigation)) return;
+  let parent = navigation.getParent?.();
+  let root = navigation;
+  while (parent) {
+    if (tryNavigate(parent)) return;
+    root = parent;
+    parent = parent.getParent?.();
+  }
+  root?.navigate?.('HomeTabs', { screen: 'Profile' });
 }
 
 export function goToCourseDetails(navigation, courseId) {
-  navigation?.navigate?.('CourseDetails', { courseId });
+  if (!navigation) return;
+  const tryNavigate = (nav) => {
+    const routeNames = nav?.getState?.()?.routeNames;
+    if (routeNames?.includes?.('CourseDetails') && nav?.navigate) {
+      nav.navigate('CourseDetails', { courseId });
+      return true;
+    }
+    return false;
+  };
+  if (tryNavigate(navigation)) return;
+  let parent = navigation.getParent?.();
+  let root = navigation;
+  while (parent) {
+    if (tryNavigate(parent)) return;
+    root = parent;
+    parent = parent.getParent?.();
+  }
+  root?.navigate?.('HomeTabs', {
+    screen: 'Home',
+    params: {
+      screen: 'CourseDetails',
+      params: { courseId },
+    },
+  });
 }
 
 export function goToSearch(navigation) {

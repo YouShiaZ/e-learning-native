@@ -33,7 +33,10 @@ export default function SearchScreen({ navigation }) {
       <ChipGroup items={hotTopics} value={active} onChange={(t) => { setActive(t); setQuery(''); }} />
 
       <SectionHeader title={t('categories')} onPress={() => {}} />
-      <CategoryGrid items={categories} />
+      <CategoryGrid
+        items={categories}
+        onPressCategory={(category) => navigation.navigate('SearchResults', { category: category.id })}
+      />
 
       <CourseSection
         title={t('recommended_for_you')}

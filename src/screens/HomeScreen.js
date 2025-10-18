@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
-import { categories, instructors } from '../mock/data';
+import { courses as seedCourses, categories, instructors } from '../mock/data';
 import SectionHeader from '../components/SectionHeader';
 import { CourseCardVertical } from '../components/CourseCard';
 import CategoryGrid from '../components/CategoryGrid';
@@ -50,13 +50,40 @@ export default function HomeScreen({ navigation }) {
   };
 
   const openTeachers = () => {
+    const tryNavigate = (nav) => {
+      const names = nav?.getState?.()?.routeNames;
+      if (names?.includes?.('Teachers') && nav?.navigate) {
+        nav.navigate('Teachers');
+        return true;
+      }
+      return false;
+    };
+    if (tryNavigate(navigation)) return;
+    let parent = navigation.getParent?.();
+    let root = navigation;
+    while (parent) {
+      if (tryNavigate(parent)) return;
+      root = parent;
+      parent = parent.getParent?.();
+    }
+    root?.navigate?.('Teachers');
+  };
+
+  const navigateToCategory = (categoryId) => {
+    if (!categoryId) return;
     const parent = navigation.getParent?.();
     if (parent?.navigate) {
-      parent.navigate('Teachers');
+      parent.navigate('Search', {
+        screen: 'SearchResults',
+        params: { category: categoryId },
+      });
       return;
     }
-    navigation.navigate('Teachers');
+    navigation.navigate('SearchResults', { category: categoryId });
   };
+
+  const fallbackPopular = popular.length ? popular : seedCourses.slice(0, config.PAGE_SIZE);
+  const recommended = fallbackPopular.slice(0, 3);
 
   return (
     <View style={[styles.wrapper, { backgroundColor: colors.background }] }>
@@ -77,14 +104,17 @@ export default function HomeScreen({ navigation }) {
         {/* Categories */}
         <View style={styles.section}>
           <SectionHeader title={t('categories')} onPress={openSearch} />
-          <CategoryGrid items={categories} onPressCategory={(c) => navigation.navigate('SearchResults', { category: c.id })} />
+          <CategoryGrid
+            items={categories}
+            onPressCategory={(c) => navigateToCategory(c.id)}
+          />
         </View>
 
         {/* Popular Courses */}
         <View style={styles.section}>
           <CourseSection
             title={t('popular_courses')}
-            data={popular}
+            data={fallbackPopular}
             onPressItem={onCourse}
             onEndReached={loadMore}
             hasMore={hasMore}
@@ -94,14 +124,14 @@ export default function HomeScreen({ navigation }) {
 
         {/* Recommended */}
         <View style={styles.section}>
-          <CourseSection title={t('recommended_for_you')} data={popular.slice(0, 3)} onPressItem={onCourse} />
+          <CourseSection title={t('recommended_for_you')} data={recommended} onPressItem={onCourse} />
         </View>
 
         {/* Course that inspires */}
         <View style={styles.section}>
           <SectionHeader title={t('course_inspires')} onPress={openSearch} />
           <View style={styles.verticalList}>
-            {popular.map((c) => (
+            {fallbackPopular.map((c) => (
               <CourseCardVertical key={c.id + '-v'} course={c} onPress={() => onCourse(c)} />
             ))}
           </View>
