@@ -6,18 +6,20 @@ import theme from '../../theme';
 import { t } from '../../i18n';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { addToWishlist, removeFromWishlist } from '../../store/slices/wishlistSlice';
+import {
+  addItem as addWishlistItem,
+  removeItem as removeWishlistItem,
+} from '../../store/slices/wishlistSlice';
 
 export default function BottomBar({ styles, course, teacher, isEnrolled, onJoin, onUnjoin, onMessage }) {
   const dispatch = useDispatch();
-  const userId = undefined; // Auth removed; use guest storage
   const wishlist = useSelector((s) => s.wishlist.items);
-  const inWishlist = wishlist.includes(course.id);
+  const inWishlist = wishlist.some((item) => item.id === course.id);
   const toggleWishlist = () => {
     if (inWishlist) {
-      dispatch(removeFromWishlist({ id: course.id, userId }));
+      dispatch(removeWishlistItem(course.id));
     } else {
-      dispatch(addToWishlist({ id: course.id, userId }));
+      dispatch(addWishlistItem(course));
     }
   };
   return (

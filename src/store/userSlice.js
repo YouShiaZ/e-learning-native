@@ -7,6 +7,7 @@ const initialState = {
   isAuthenticated: false,
   isGuest: false,
   isAdmin: false,
+  isTeacher: false,
   enrolled: [], // list of course IDs
 };
 
@@ -19,26 +20,30 @@ const userSlice = createSlice({
       state.user = user;
       state.isAuthenticated = !!user;
       state.isGuest = false;
-      state.isAdmin = Boolean(user?.role === 'admin' || user?.role === 'teacher');
+      state.isAdmin = Boolean(user?.role === 'admin');
+      state.isTeacher = Boolean(user?.role === 'teacher');
     },
     registerSuccess(state, action) {
       const user = action.payload || null;
       state.user = user;
       state.isAuthenticated = !!user;
       state.isGuest = false;
-      state.isAdmin = Boolean(user?.role === 'admin' || user?.role === 'teacher');
+      state.isAdmin = Boolean(user?.role === 'admin');
+      state.isTeacher = Boolean(user?.role === 'teacher');
     },
     continueAsGuest(state) {
       state.user = null;
       state.isAuthenticated = false;
       state.isGuest = true;
       state.isAdmin = false;
+      state.isTeacher = false;
     },
     logout(state) {
       state.user = null;
       state.isAuthenticated = false;
       state.isGuest = false;
       state.isAdmin = false;
+      state.isTeacher = false;
       state.enrolled = [];
     },
 
@@ -48,7 +53,10 @@ const userSlice = createSlice({
     updateProfile(state, action) {
       const updates = action.payload || {};
       state.user = { ...state.user, ...updates };
-      if (updates?.role) state.isAdmin = Boolean(updates.role === 'admin' || updates.role === 'teacher');
+      if (updates?.role) {
+        state.isAdmin = updates.role === 'admin';
+        state.isTeacher = updates.role === 'teacher';
+      }
     },
 
     joinCourse(state, action) {

@@ -1,19 +1,24 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-  import { useColors } from '../../theme/hooks';
+import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
 import { t } from '../../i18n';
 import QuickPrefsHeaderRight from '../../components/QuickPrefs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { continueAsGuest } from '../../store/userSlice';
 // Header quick prefs are provided via navigator header on this screen
 
 export default function WelcomeScreen({ navigation }) {
   const colors = useColors();
+  const dispatch = useDispatch();
 
   const onGuest = async () => {
     try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ isGuest: true })); } catch {}
-    navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+    dispatch(continueAsGuest());
+    const rootNav = navigation.getParent?.() || navigation;
+    rootNav.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
   };
 
   return (

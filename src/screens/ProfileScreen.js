@@ -6,6 +6,7 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,6 +16,7 @@ import { t } from '../i18n';
 import { courses, instructors } from '../mock/data';
 import { CourseCardVertical } from '../components/CourseCard';
 import { logout } from '../store/userSlice';
+import { clearSession } from '../services/authStorage';
 
 const FALLBACK_AVATAR = 'https://i.pravatar.cc/150?img=15';
 
@@ -71,12 +73,31 @@ export default function ProfileScreen({ navigation }) {
     );
   }, [user]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     dispatch(logout());
-    try {
-      navigation?.navigate?.('Welcome');
-    } catch {
-      navigation?.reset?.({ index: 0, routes: [{ name: 'Welcome' }] });
+    await clearSession();
+    const parent = navigation.getParent?.();
+    if (parent?.reset) {
+      parent.reset({ index: 0, routes: [{ name: 'WelcomeStack' }] });
+      return;
+    }
+    navigation.reset?.({ index: 0, routes: [{ name: 'WelcomeStack' }] });
+  };
+
+  const handleEditProfile = () => {
+    Alert.alert(
+      t('coming_soon') || 'Coming soon',
+      t('profile_edit_soon') || 'Profile editing will be available in a future update.'
+    );
+  };
+
+  const handleManageCourses = () => {
+    const parent = navigation.getParent?.();
+    const target = { screen: 'AdminDashboard' };
+    if (parent?.navigate) {
+      parent.navigate('AdminPanel', target);
+    } else {
+      navigation.navigate('AdminPanel', target);
     }
   };
 
@@ -174,6 +195,28 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={[styles.outlineBtn, { borderColor: colors.primary }]}
+            onPress={handleEditProfile}
+          >
+            <Ionicons name="create-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+            <Text style={[styles.outlineBtnText, { color: colors.primary }]}>
+              {t('edit_profile') || 'Edit profile'}
+            </Text>
+          </TouchableOpacity>
+          {(user.role === 'admin' || user.role === 'teacher') ? (
+            <TouchableOpacity
+              style={[styles.outlineBtn, { borderColor: colors.primary }]}
+              onPress={handleManageCourses}
+            >
+              <Ionicons name="briefcase-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+              <Text style={[styles.outlineBtnText, { color: colors.primary }]}>
+                {user.role === 'admin'
+                  ? t('admin_dashboard') || 'Admin dashboard'
+                  : t('manage_courses') || 'Manage courses'}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
             style={[styles.outlineBtn, { borderColor: colors.primary }]}
             onPress={() => navigation.navigate('Home')}
@@ -316,6 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
+    flexWrap: 'wrap',
     marginTop: 8,
   },
   primaryBtn: {
@@ -337,6 +381,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
   },
   outlineBtnText: {
     fontWeight: '700',

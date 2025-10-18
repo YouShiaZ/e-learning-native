@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
-import { Platform, I18nManager, ActivityIndicator, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { Platform, I18nManager, ActivityIndicator, View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import QuickPrefsHeaderRight from './src/components/QuickPrefs';
@@ -37,7 +37,7 @@ import CourseFormScreen from './src/screens/admin/CourseFormScreen';
 import AdminUsersScreen from './src/screens/admin/AdminUsersScreen';
 import AdminCategoriesScreen from './src/screens/admin/AdminCategoriesScreen';
 import AdminSettingsScreen from './src/screens/admin/AdminSettingsScreen';
-import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
+import AdminDashboard from './src/screens/AdminDashboard';
 import AdminLiveScreen from './src/screens/admin/AdminLiveScreen';
 import AdminScheduleScreen from './src/screens/admin/AdminScheduleScreen';
 import LiveNowScreen from './src/screens/LiveNowScreen';
@@ -52,7 +52,9 @@ import RegisterScreen from './src/screens/auth/RegisterScreen';
 import LogoutScreen from './src/screens/auth/LogoutScreen';
 
 // Auth
-import { loginSuccess, continueAsGuest, logout } from './src/store/userSlice';
+import { loginSuccess, logout } from './src/store/userSlice';
+import { loadCourses } from './src/store/slices/coursesSlice';
+import { loadTeachers } from './src/store/slices/teachersSlice';
 
 import theme from './src/theme';
 import { t } from './src/i18n';
@@ -60,6 +62,7 @@ import { withStore } from './src/store';
 // Auth removed: no user loading
 import { setDarkMode, setLocaleUI, setPrimaryColor } from './src/store/uiSlice';
 import { openDrawer } from './src/utils/nav';
+import { loadUsersMap, loadSession } from './src/services/authStorage';
 
 const Tab = createBottomTabNavigator();
 const Stack = Platform.OS === 'web' ? createStackNavigator() : createNativeStackNavigator();
@@ -128,7 +131,7 @@ function SearchStack() {
 function AdminStack() {
   return (
     <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
-      <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: t('admin') }} />
+      <Stack.Screen name="AdminDashboard" component={AdminDashboard} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourseForm" component={CourseFormScreen} options={{ title: t('course') }} />
       <Stack.Screen name="AdminUsers" component={AdminUsersScreen} options={{ title: t('admin') }} />
@@ -240,9 +243,14 @@ function DrawerNavigator() {
       {!isAuthenticated ? (
         <Drawer.Screen name="WelcomeStack" component={AuthStack} options={{ title: 'Welcome' }} />
       ) : null}
-      {isAdmin ? (
-        <Drawer.Screen name="AdminPanel" component={AdminStack} options={{ title: t('admin') }} />
-      ) : null}
+      <Drawer.Screen
+        name="AdminPanel"
+        component={AdminStack}
+        options={{
+          title: t('admin'),
+          drawerItemStyle: isAdmin ? undefined : { display: 'none' },
+        }}
+      />
       {isAuthenticated ? (
         <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') }} />
       ) : null}
@@ -294,6 +302,7 @@ function AppContent() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        await loadUsersMap();
         // Load UI preferences (dark mode + locale)
         try {
           const dark = await AsyncStorage.getItem('@elearning_dark_mode');
@@ -308,20 +317,18 @@ function AppContent() {
           const uc = await AsyncStorage.getItem('@elearning_user_primary_color');
           if (uc) dispatch(setPrimaryColor(uc));
         } catch {}
-        // Load auth state
         try {
-          const raw = await AsyncStorage.getItem('@elearning_auth_state');
-          if (raw) {
-            const obj = JSON.parse(raw);
-            if (obj?.user) dispatch(loginSuccess(obj.user));
-            else if (obj?.isGuest) dispatch(continueAsGuest());
+          const storedUser = await loadSession();
+          if (storedUser) {
+            dispatch(loginSuccess(storedUser));
           }
         } catch {}
+        dispatch(loadCourses());
+        dispatch(loadTeachers());
       } catch (error) {
-        // ignore
+        // ignore initialization errors
       } finally {
         setIsInitializing(false);
-        // Hide splash screen when app is ready
         SplashScreen.hideAsync();
       }
     };

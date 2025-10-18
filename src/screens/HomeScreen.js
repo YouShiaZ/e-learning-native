@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { DrawerActions } from '@react-navigation/native';
-import { openDrawer, goToMessages, goToProfile } from '../utils/nav';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
 import { categories, instructors } from '../mock/data';
@@ -16,7 +12,7 @@ import BannerPromo from '../components/BannerPromo';
 import { t } from '../i18n';
 import { CoursesAPI } from '../services/api';
 import config from '../config';
-import { useSelector } from 'react-redux';
+import { goToSearch } from '../utils/nav';
 
 export default function HomeScreen({ navigation }) {
   const colors = useColors();
@@ -24,8 +20,6 @@ export default function HomeScreen({ navigation }) {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-
-  const user = useSelector((s) => s.user.user);
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -51,8 +45,18 @@ export default function HomeScreen({ navigation }) {
   const onCourse = (c) => navigation.navigate('CourseDetails', { courseId: c.id });
   const onTeacher = (tch) => navigation.navigate('TeacherProfile', { teacherId: tch.id });
 
-  const name = (user?.name && String(user.name).trim()) || 'Learner';
-  const avatarUri = user?.avatar || 'https://i.pravatar.cc/100?img=5';
+  const openSearch = () => {
+    goToSearch(navigation);
+  };
+
+  const openTeachers = () => {
+    const parent = navigation.getParent?.();
+    if (parent?.navigate) {
+      parent.navigate('Teachers');
+      return;
+    }
+    navigation.navigate('Teachers');
+  };
 
   return (
     <View style={[styles.wrapper, { backgroundColor: colors.background }] }>
@@ -66,13 +70,13 @@ export default function HomeScreen({ navigation }) {
             titleMain="20% OFF"
             ctaLabel={t('view_more')}
             image={{ uri: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&q=60' }}
-            onPress={() => navigation.navigate('Search')}
+            onPress={openSearch}
           />
         </View>
 
         {/* Categories */}
         <View style={styles.section}>
-          <SectionHeader title={t('categories')} onPress={() => {}} />
+          <SectionHeader title={t('categories')} onPress={openSearch} />
           <CategoryGrid items={categories} onPressCategory={(c) => navigation.navigate('SearchResults', { category: c.id })} />
         </View>
 
@@ -95,7 +99,7 @@ export default function HomeScreen({ navigation }) {
 
         {/* Course that inspires */}
         <View style={styles.section}>
-          <SectionHeader title={t('course_inspires')} onPress={() => {}} />
+          <SectionHeader title={t('course_inspires')} onPress={openSearch} />
           <View style={styles.verticalList}>
             {popular.map((c) => (
               <CourseCardVertical key={c.id + '-v'} course={c} onPress={() => onCourse(c)} />
@@ -105,7 +109,7 @@ export default function HomeScreen({ navigation }) {
 
         {/* Teachers */}
         <View style={styles.section}>
-          <TeacherSection data={instructors} onMore={() => {}} onTeacherPress={onTeacher} />
+          <TeacherSection data={instructors} onMore={openTeachers} onTeacherPress={onTeacher} />
         </View>
 
         <View style={{ height: theme.spacing.xxl }} />

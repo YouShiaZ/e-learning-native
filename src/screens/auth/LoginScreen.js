@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import theme from '../../theme';
 import { t } from '../../i18n';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/userSlice';
+import { loadUsersMap, saveUsersMap, saveSession } from '../../services/authStorage';
 
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -24,44 +24,37 @@ export default function LoginScreen({ navigation }) {
     if (!validate()) return;
     const nm = (name || '').trim();
     const em = (email || '').trim();
-    let map = {};
-    try {
-      const rawMap = await AsyncStorage.getItem('@elearning_profiles');
-      map = rawMap ? JSON.parse(rawMap) : {};
-    } catch {}
+    setErrors((prev) => ({ ...prev, form: null }));
     const key = em.toLowerCase();
 
-    let user = null;
-    if (map[key]) {
-      const prev = map[key];
-      user = {
-        ...prev,
-        id: prev.id || Date.now(),
-        name: nm || prev.name || 'Learner',
-        email: em,
-        role: prev.role || (em.endsWith('@admin.com') ? 'admin' : 'user'),
-        avatar: prev.avatar || 'https://i.pravatar.cc/150?img=3',
-        profile: prev.profile || {},
-      };
-    } else {
-      user = {
-        id: Date.now(),
-        name: nm || 'Learner',
-        email: em,
-        role: em.endsWith('@admin.com') ? 'admin' : 'user',
-        avatar: 'https://i.pravatar.cc/150?img=3',
-        profile: {},
-      };
+    const usersMap = await loadUsersMap();
+    const existing = usersMap[key];
+
+    if (!existing) {
+      const message = t('invalid_credentials') || 'Invalid credentials';
+      setErrors((prev) => ({ ...prev, form: message }));
+      Alert.alert(t('login_failed') || 'Login failed', message);
+      return;
     }
-    try {
-      map[key] = user;
-      await AsyncStorage.setItem('@elearning_profiles', JSON.stringify(map));
-    } catch {}
+
+    const user = {
+      ...existing,
+      name: nm || existing.name || 'Learner',
+      email: em,
+      id: existing.id || Date.now(),
+      avatar: existing.avatar || 'https://i.pravatar.cc/150?img=3',
+      role: existing.role || 'user',
+      profile: existing.profile || {},
+    };
+
+    usersMap[key] = user;
+    await saveUsersMap(usersMap);
 
     try { dispatch(loginSuccess(user)); } catch {}
-    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
+    try { await saveSession(user); } catch {}
     try {
-      navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+      const rootNav = navigation.getParent?.() || navigation;
+      rootNav.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
     } catch {}
   };
 
@@ -105,6 +98,9 @@ export default function LoginScreen({ navigation }) {
           />
           {errors.email ? <Text style={styles.err}>{errors.email}</Text> : null}
         </View>
+        {errors.form ? (
+          <Text style={styles.formError}>{errors.form}</Text>
+        ) : null}
         <TouchableOpacity onPress={onLogin} style={styles.btn} activeOpacity={0.85}>
           <Text style={styles.btnText}>{t('login') || 'Login'}</Text>
         </TouchableOpacity>
@@ -138,6 +134,13 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 10, backgroundColor: theme.colors.card, color: theme.colors.text },
   inputError: { borderColor: theme.colors.danger },
   err: { color: theme.colors.danger, fontSize: 12, marginTop: 6 },
+  formError: {
+    color: theme.colors.danger,
+    fontSize: 13,
+    marginBottom: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   btn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },
 });

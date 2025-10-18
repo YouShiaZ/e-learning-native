@@ -2,10 +2,10 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, Platform } from 'react-native';
 import theme from '../../theme';
 import { t } from '../../i18n';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../../store/userSlice';
+import { registerSuccess } from '../../store/userSlice';
+import { loadUsersMap, saveUsersMap, saveSession } from '../../services/authStorage';
 
 export default function RegisterScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ export default function RegisterScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [role, setRole] = useState('student');
+  const [role, setRole] = useState('user');
   const [birthDate, setBirthDate] = useState('');
   const [phone, setPhone] = useState('');
     const [selectedCourse, setSelectedCourse] = useState('');
@@ -40,7 +40,7 @@ export default function RegisterScreen({ navigation }) {
       if (!confirmPassword) next.confirmPassword = t('confirm_password_required') || 'Confirm your password';
       else if (confirmPassword !== password) next.confirmPassword = t('passwords_mismatch') || 'Passwords do not match';
     }
-    if (role === 'student') {
+    if (role === 'user') {
       if (!bd) next.birthDate = t('birthdate_required') || 'Birth date is required';
       else if (!/^\d{4}-\d{2}-\d{2}$/.test(bd)) next.birthDate = t('birthdate_format') || 'Use YYYY-MM-DD';
       if (!ph) next.phone = t('phone_required') || 'Phone is required';
@@ -85,30 +85,34 @@ export default function RegisterScreen({ navigation }) {
 
   const onRegister = async () => {
     if (!validate()) return;
+    const emailNormalized = email.trim().toLowerCase();
+    const usersMap = await loadUsersMap();
+    if (usersMap[emailNormalized]) {
+      setErrors((prev) => ({ ...prev, email: t('email_exists') || 'Email already registered' }));
+      return;
+    }
+    const normalizedRole = role === 'admin' ? 'admin' : role === 'teacher' ? 'teacher' : 'user';
     const profile = {
       phone: (phone || '').trim() || null,
       birthDate: (birthDate || '').trim() || null,
-            teacherCourse: role === 'teacher' ? (selectedCourse || null) : null,
+      teacherCourse: normalizedRole === 'teacher' ? (selectedCourse || null) : null,
+      teacherId: normalizedRole === 'teacher' ? 't1' : undefined,
     };
     const user = {
       id: Date.now(),
       name: name.trim(),
-      email: email.trim(),
-      role: role,
+      email: emailNormalized,
+      role: normalizedRole,
       avatar: avatarUri || 'https://i.pravatar.cc/150?img=4',
       profile,
     };
-    try { dispatch(loginSuccess(user)); } catch {}
-    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
+    usersMap[emailNormalized] = user;
+    await saveUsersMap(usersMap);
+    try { dispatch(registerSuccess(user)); } catch {}
+    try { await saveSession(user); } catch {}
     try {
-      const key = (user.email || '').toLowerCase();
-      const raw = await AsyncStorage.getItem('@elearning_profiles');
-      const map = raw ? JSON.parse(raw) : {};
-      map[key] = user;
-      await AsyncStorage.setItem('@elearning_profiles', JSON.stringify(map));
-    } catch {}
-    try {
-      navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+      const rootNav = navigation.getParent?.() || navigation;
+      rootNav.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
     } catch {}
   };
 
@@ -182,7 +186,7 @@ export default function RegisterScreen({ navigation }) {
         </View>
       ) : null}
 
-      {role === 'student' ? (
+      {role === 'user' ? (
         <>
           <View style={styles.field}>
             <Text style={styles.label}>{t('birth_date') || 'Birth Date'}</Text>
@@ -286,9 +290,9 @@ export default function RegisterScreen({ navigation }) {
       <View style={styles.field}>
         <Text style={styles.label}>{t('role') || 'Role'}</Text>
         <View style={styles.roleRow}>
-          {['student','teacher','admin'].map((r) => (
+          {['user','teacher','admin'].map((r) => (
             <TouchableOpacity key={r} onPress={() => { setRole(r); }} style={[styles.roleChip, role === r && styles.roleChipActive]} activeOpacity={0.8}>
-              <Text style={[styles.roleChipText, { color: role === r ? '#fff' : theme.colors.muted }]}>{t(r) || r}</Text>
+              <Text style={[styles.roleChipText, { color: role === r ? '#fff' : theme.colors.muted }]}>{t(r === 'user' ? 'student' : r) || (r === 'user' ? 'Student' : r)}</Text>
             </TouchableOpacity>
           ))}
         </View>

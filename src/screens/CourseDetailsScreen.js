@@ -1,15 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
 import { courses, instructors } from '../mock/data';
-import RatingStars from '../components/RatingStars';
 import HeaderCover from './course/HeaderCover';
 import BottomBar from './course/BottomBar';
 
 import Tabs from '../components/Tabs';
-
 
 import { CoursesAPI } from '../services/api';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,7 +31,7 @@ export default function CourseDetailsScreen({ route, navigation }) {
   const [teacher, setTeacher] = useState(
     instructors.find((t) => t.id === fallbackCourse.teacherId) || instructors[0]
   );
-  const [tab, setTab] = useState('OVERVIEW');
+  const [activeTab, setActiveTab] = useState('overview');
   const favoriteCourses = useSelector(selectAllFavorites);
   const isBookmarked = favoriteCourses.some((fav) => fav.id === course?.id);
   const onToggleBookmark = () => {
@@ -71,7 +69,15 @@ export default function CourseDetailsScreen({ route, navigation }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={true}
-      >        <HeaderCover styles={styles} course={course} navigation={navigation} isBookmarked={isBookmarked} setIsBookmarked={onToggleBookmark} />        <View style={styles.infoCard}>
+      >
+        <HeaderCover
+          styles={styles}
+          course={course}
+          navigation={navigation}
+          isBookmarked={isBookmarked}
+          setIsBookmarked={onToggleBookmark}
+        />
+        <View style={styles.infoCard}>
           <Text style={styles.title}>{course.title}</Text>
           <Text style={styles.author}>{teacher.name}</Text>
 
@@ -95,13 +101,23 @@ export default function CourseDetailsScreen({ route, navigation }) {
               <Ionicons name="time" size={16} color={theme.colors.accent} />
               <Text style={styles.metaText}>12h 30m</Text>
             </View>
-          </View>          <View style={styles.tabsContainer}>
-            <Tabs items={[require('../i18n').t('overview') || 'OVERVIEW', require('../i18n').t('lessons_tab') || 'LESSONS', require('../i18n').t('review') || 'REVIEW']} value={tab} onChange={setTab} />
           </View>
-        </View>        <View style={styles.contentContainer}>
-          {tab === 'OVERVIEW' && <OverviewSection course={course} teacher={teacher} navigation={navigation} />}
-          {tab === 'LESSONS' && <LessonsSection course={course} navigation={navigation} />} 
-          {tab === 'REVIEW' && <ReviewSection course={course} /> }
+          <View style={styles.tabsContainer}>
+            <Tabs
+              items={[
+                { key: 'overview', label: require('../i18n').t('overview') || 'Overview' },
+                { key: 'lessons', label: require('../i18n').t('lessons_tab') || 'Lessons' },
+                { key: 'review', label: require('../i18n').t('review') || 'Review' },
+              ]}
+              value={activeTab}
+              onChange={(key) => setActiveTab(key)}
+            />
+          </View>
+        </View>
+        <View style={styles.contentContainer}>
+          {activeTab === 'overview' && <OverviewSection course={course} teacher={teacher} navigation={navigation} />}
+          {activeTab === 'lessons' && <LessonsSection course={course} navigation={navigation} />} 
+          {activeTab === 'review' && <ReviewSection course={course} /> }
         </View>
       </ScrollView>
 

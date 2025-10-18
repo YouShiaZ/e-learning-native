@@ -40,7 +40,7 @@ import AdminSettingsScreen from './src/screens/admin/AdminSettingsScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
 import LogoutScreen from './src/screens/auth/LogoutScreen';
-import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
+import AdminDashboard from './src/screens/AdminDashboard';
 import AdminLiveScreen from './src/screens/admin/AdminLiveScreen';
 import AdminScheduleScreen from './src/screens/admin/AdminScheduleScreen';
 import LiveNowScreen from './src/screens/LiveNowScreen';
@@ -52,6 +52,10 @@ import { t } from './src/i18n';
 import { openDrawer } from './src/utils/nav';
 import { withStore } from './src/store';
 import { setDarkMode, setLocaleUI } from './src/store/uiSlice';
+import { loadCourses } from './src/store/slices/coursesSlice';
+import { loadTeachers } from './src/store/slices/teachersSlice';
+import { loginSuccess } from './src/store/userSlice';
+import { loadUsersMap, loadSession } from './src/services/authStorage';
 
 const Tab = createBottomTabNavigator();
 const Stack = Platform.OS === 'web' ? createStackNavigator() : createNativeStackNavigator();
@@ -93,7 +97,7 @@ function AuthStack() {
 function AdminStack() {
   return (
     <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
-      <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
+      <Stack.Screen name="AdminDashboard" component={AdminDashboard} options={{ title: 'Admin' }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourseForm" component={CourseFormScreen} options={{ title: t('course') }} />
       <Stack.Screen name="AdminUsers" component={AdminUsersScreen} options={{ title: 'Admin Users' }} />
@@ -138,6 +142,7 @@ function TeachersStack() {
 }
 
 function MainTabs() {
+  const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -162,6 +167,9 @@ function MainTabs() {
       <Tab.Screen name="Search" component={SearchStack} options={{ tabBarLabel: t('search') }} />
       <Tab.Screen name="MyCourses" component={MyCoursesScreen} options={{ headerShown: false, tabBarLabel: t('my_courses') }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false, tabBarLabel: t('profile') }} />
+      {isAdmin ? (
+        <Tab.Screen name="Admin" component={AdminStack} options={{ headerShown: false, tabBarLabel: 'Admin' }} />
+      ) : null}
     </Tab.Navigator>
   );
 }
@@ -190,9 +198,14 @@ function DrawerNavigator() {
       <Drawer.Screen name="Schedule" component={ScheduleStack} options={{ title: t('schedule') || 'Schedule' }} />
       <Drawer.Screen name="Teachers" component={TeachersStack} options={{ title: 'Teachers' }} />
 
-      {isAdmin ? (
-        <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
-      ) : null}
+      <Drawer.Screen
+        name="AdminPanel"
+        component={AdminStack}
+        options={{
+          title: 'Admin',
+          drawerItemStyle: isAdmin ? undefined : { display: 'none' },
+        }}
+      />
 
       {!isAuthenticated ? (
         <>
@@ -215,6 +228,7 @@ function AppContent() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        await loadUsersMap();
         // Load UI preferences (dark mode + locale)
         try {
           const dark = await AsyncStorage.getItem('@elearning_dark_mode');
@@ -225,6 +239,12 @@ function AppContent() {
             try { require('./src/i18n').setLocale(lc); } catch {}
           }
         } catch {}
+        try {
+          const storedUser = await loadSession();
+          if (storedUser) dispatch(loginSuccess(storedUser));
+        } catch {}
+        dispatch(loadCourses());
+        dispatch(loadTeachers());
       } catch (error) {
         // ignore
       } finally {

@@ -1,15 +1,21 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView } from 'react-native';
 import theme from '../../theme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../store/userSlice';
+import { clearSession } from '../../services/authStorage';
 
 export default function LogoutScreen({ navigation }) {
+  const dispatch = useDispatch();
+
   useEffect(() => {
     (async () => {
-      try { await AsyncStorage.removeItem('@elearning_auth_state'); } catch {}
-      navigation.goBack();
+      await clearSession();
+      dispatch(logout());
+      const rootNav = navigation.getParent?.() || navigation;
+      rootNav.reset({ index: 0, routes: [{ name: 'WelcomeStack' }] });
     })();
-  }, [navigation]);
+  }, [dispatch, navigation]);
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
@@ -20,4 +26,3 @@ export default function LogoutScreen({ navigation }) {
     </ScrollView>
   );
 }
-

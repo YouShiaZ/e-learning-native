@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
 
@@ -8,17 +8,24 @@ export default function Tabs({ items = [], value, onChange }) {
   return (
     <View style={styles.container}>
       <View style={[styles.tabsWrapper, { backgroundColor: colors.surface }]}>
-        {items.map((t, index) => {
-          const isActive = value === t;
+        {items.map((item, index) => {
+          const normalized =
+            typeof item === 'string'
+              ? { key: item, label: item }
+              : {
+                  key: item?.key ?? String(index),
+                  label: item?.label ?? item?.key ?? String(index),
+                };
+          const isActive = value === normalized.key;
           return (
             <TouchableOpacity 
-              key={t} 
-              onPress={() => onChange?.(t)}
+              key={normalized.key}
+              onPress={() => onChange?.(normalized.key, item)}
               style={[styles.tab, isActive && [styles.activeTab, { backgroundColor: colors.card }]]}
               activeOpacity={0.7}
             >
               <Text style={[styles.tabText, { color: colors.muted }, isActive && [styles.activeTabText, { color: colors.primary }]]}>
-                {t}
+                {normalized.label}
               </Text>
               {isActive && <View style={[styles.activeIndicator, { backgroundColor: colors.primary }]} />}
             </TouchableOpacity>
